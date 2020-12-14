@@ -1,6 +1,11 @@
-name: A workflow for my Hello World file
-on: push
-
+name: Test Lighthouse Step
+on:
+  # run daily at 9am pt
+  schedule:
+    - cron: '15 20 * * *'
+  repository_dispatch:
+    types:
+      - BUILD_COMPLETE
 jobs:
   build:
     name: Hello world action
@@ -10,3 +15,59 @@ jobs:
       - uses: ./action-a
         with:
           MY_NAME: "Mona"
+      
+      - id: successfulApps
+        if: github.event_name != 'schedule'
+        run: |
+          if ! command -v jq &> /dev/null
+          then
+          echo "jq could not be found, installing"
+          apt-get update
+          apt-get install -y jq
+          fi
+          SUCCESSFUL_APPS=$(cat $GITHUB_EVENT_PATH | jq -r '.client_payload.successfulApps | @json')
+          echo $SUCCESSFUL_APPS
+          SUCCESSFUL_APPS_LENGTH=$(echo $SUCCESSFUL_APPS | jq '. | length')
+          SUCCESSFUL_APPS_STRING=$(echo $SUCCESSFUL_APPS | jq '.|tostring')
+          echo $SUCCESSFUL_APPS_STRING
+          echo "::set-output name=apps::$SUCCESSFUL_APPS"
+          echo "::set-output name=length::$SUCCESSFUL_APPS_LENGTH"
+          echo "::set-output name=appsString::$SUCCESSFUL_APPS_STRING"
+            
+            
+      - uses: actions/github-script@v3
+        id: createCheckRun
+        if: github.event_name != 'schedule' && steps.successfulApps.outputs.length != 0
+        with:
+          script: |
+            const { data: { id: checkRunId }} = await github.checks.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              name: "Tests",
+              head_sha: "${{ github.event.client_payload.version }}",
+              status: "queued"
+            })
+
+            console.info({ checkRunId });
+
+            return checkRunId;
+
+      - name: Start `run-lighthouse-test` CodeBuild
+        id: runLighthouse
+        if: steps.successfulApps.outputs.length >= 1 || github.event_name == 'schedule'
+        uses: gagoar/invoke-aws-lambda@v3.2.0
+        with:
+          AWS_ACCESS_KEY_ID: ${{ secrets.KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.KEY }}
+          FunctionName: codebuildTrigger
+          Qualifier: production
+          logType: None
+          MAX_RETRIES: 0
+          Payload: '{"queryStringParameters": { "projectName": "run-lighthouse-test-vlee", "VERSION": "${{ github.event.client_payload && github.event.client_payload.version }}", "GITHUB_CHECK_RUN_ID": "${{ steps.createCheckRun && steps.createCheckRun.outputs.result }}", "APP_NAMES": ${{ steps.successfulApps.outputs.appsString || ''""''}}, "CHANGE_SET_ID": "${{ github.event.client_payload && github.event.client_payload.changeMetadata.ref.changesetId }}", "CHANGE_ID": "${{ github.event.client_payload && github.event.client_payload.changeMetadata.ref.changeId }}", "IS_PROD_RUN": "${{ github.event_name == ''schedule''}}", "GITHUB_API_TOKEN": "${{ steps.auth.outputs.token }}"}}'
+
+      - id: getCodeBuildExecution
+        if: steps.successfulApps.outputs.length >= 1 || github.event_name == 'schedule'
+        run: |
+          EXECUTION_ID=$(echo '${{ fromJson(steps.runLighthouse.outputs.response).Payload }}' | jq -r '.body[0]')
+          echo $EXECUTION_ID
+          echo "::set-output name=id::$EXECUTION_ID"
