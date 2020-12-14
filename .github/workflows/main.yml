@@ -2,7 +2,10 @@ name: Test Lighthouse Step
 on:
   # run daily at 9am pt
   schedule:
-    - cron: '23 20 * * *'
+    - cron: '50 20 * * *'
+  pull_request:
+    types: 
+      - opened
   repository_dispatch:
     types:
       - BUILD_COMPLETE
