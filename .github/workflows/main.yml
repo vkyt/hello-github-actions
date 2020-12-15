@@ -1,8 +1,5 @@
 name: Test Lighthouse Step
 on:
-  # run daily at 9am pt
-  schedule:
-    - cron: '50 20 * * *'
   pull_request:
     types: 
       - opened
