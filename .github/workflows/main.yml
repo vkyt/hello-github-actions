@@ -18,6 +18,7 @@ jobs:
           MY_NAME: "Mona"
       
       - id: successfulApps
+        name: Check Apps
         if: github.event_name != 'schedule'
         run: |
           if ! command -v jq &> /dev/null
