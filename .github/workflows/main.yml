@@ -27,7 +27,7 @@ jobs:
             apt-get update
             apt-get install -y jq
           fi
-          SUCCESSFUL_APPS=("next" "premium-hub")
+          SUCCESSFUL_APPS=(next premium-hub)
           echo $SUCCESSFUL_APPS
           SUCCESSFUL_APPS_LENGTH=$(echo $SUCCESSFUL_APPS | jq '. | length')
           SUCCESSFUL_APPS_STRING=$(echo $SUCCESSFUL_APPS | jq '.|tostring')
