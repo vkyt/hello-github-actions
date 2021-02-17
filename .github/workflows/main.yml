@@ -27,7 +27,9 @@ jobs:
           echo "::set-output name=apps::$SUCCESSFUL_APPS"
 
           SUCCESSFUL_APPS_ARR=$(echo $SUCCESSFUL_APPS | sed -e 's/\[ //g' -e 's/\ ]//g' -e 's/\,//g')
+          echo $SUCCESSFUL_APPS_ARR
           SUCCESSFUL_APPS_ARR_FORMATTED=( $SUCCESSFUL_APPS_ARR )
+          echo $SUCCESSFUL_APPS_ARR_FORMATTED
           ENABLED_APPS=()
 
           for i in ${SUCCESSFUL_APPS_ARR_FORMATTED[@]}
