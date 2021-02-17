@@ -22,9 +22,9 @@ jobs:
         run: |
           if ! command -v jq &> /dev/null
           then
-          echo "jq could not be found, installing"
-          apt-get update
-          apt-get install -y jq
+            echo "jq could not be found, installing"
+            apt-get update
+            apt-get install -y jq
           fi
           SUCCESSFUL_APPS=("next" "premium-hub")
           echo $SUCCESSFUL_APPS
@@ -56,8 +56,6 @@ jobs:
           done
 
           echo $ENABLED_APPS
-            
-            
       - uses: actions/github-script@v3
         id: createCheckRun
         if: github.event_name != 'schedule' && steps.successfulApps.outputs.length != 0
