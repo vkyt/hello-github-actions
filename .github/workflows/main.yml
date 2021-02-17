@@ -39,7 +39,7 @@ jobs:
 
             if [[ "$VISUAL_TEST_REQ" = true ]];then
               echo "::set-output name=testRequired::true"
-              ENABLED_APPS+=(APP_ID)
+              ENABLED_APPS+=($APP_ID)
               break;
             else
               echo "::set-output name=testRequired::false"
