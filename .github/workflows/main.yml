@@ -8,10 +8,10 @@ on:
       - opened
   repository_dispatch:
     types:
-      - BUILD_COMPLETE
+      - R2_BUILD_COMPLETE
 jobs:
   build:
-    name: Hello world action
+    name: test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
@@ -28,7 +28,7 @@ jobs:
           apt-get update
           apt-get install -y jq
           fi
-          SUCCESSFUL_APPS=$(cat $GITHUB_EVENT_PATH | jq -r '.client_payload.successfulApps | @json')
+          SUCCESSFUL_APPS=("next" "premium-hub")
           echo $SUCCESSFUL_APPS
           SUCCESSFUL_APPS_LENGTH=$(echo $SUCCESSFUL_APPS | jq '. | length')
           SUCCESSFUL_APPS_STRING=$(echo $SUCCESSFUL_APPS | jq '.|tostring')
@@ -36,6 +36,28 @@ jobs:
           echo "::set-output name=apps::$SUCCESSFUL_APPS"
           echo "::set-output name=length::$SUCCESSFUL_APPS_LENGTH"
           echo "::set-output name=appsString::$SUCCESSFUL_APPS_STRING"
+
+          SUCCESSFUL_APPS_ARR=$(echo $SUCCESSFUL_APPS | sed -e 's/\[ //g' -e 's/\ ]//g' -e 's/\,//g')
+          SUCCESSFUL_APPS_ARR_FORMATTED=( $SUCCESSFUL_APPS_ARR )
+          ENABLED_APPS=()
+
+          for i in ${SUCCESSFUL_APPS_ARR_FORMATTED[@]}
+          do
+            APP_ID=(${i//\"})
+            echo $APP_ID
+            echo $(pwd)
+            VISUAL_TEST_REQ=true
+
+            if [[ "$VISUAL_TEST_REQ" = true ]];then
+              echo "::set-output name=testRequired::true"
+              ENABLED_APPS+=(APP_ID)
+              break;
+            else
+              echo "::set-output name=testRequired::false"
+            fi
+          done
+
+          echo $ENABLED_APPS
             
             
       - uses: actions/github-script@v3
