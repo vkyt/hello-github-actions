@@ -21,7 +21,7 @@ jobs:
         name: Check Apps
         if: github.event_name != 'schedule'
         run: |
-          SUCCESSFUL_APPS=(next premium-hub)
+          SUCCESSFUL_APPS="[\"teach-course\", \"browser\", \"next\", \"premium-hub\"]"
           echo $SUCCESSFUL_APPS
 
           echo "::set-output name=apps::$SUCCESSFUL_APPS"
