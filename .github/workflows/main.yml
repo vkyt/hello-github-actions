@@ -21,7 +21,7 @@ jobs:
         name: Check Apps
         if: github.event_name != 'schedule'
         run: |
-          SUCCESSFUL_APPS="[ '\"teach-course\"', '\"browser\"', '\"next\"', '\"premium-hub\"' ]"
+          SUCCESSFUL_APPS="[ \"teach-course\", \"browser\", \"next\", \"premium-hub\" ]"
           echo $SUCCESSFUL_APPS
 
           echo "::set-output name=apps::$SUCCESSFUL_APPS"
@@ -32,7 +32,7 @@ jobs:
           echo $SUCCESSFUL_APPS_ARR_FORMATTED
           ENABLED_APPS=()
 
-          for i in ${SUCCESSFUL_APPS_ARR_FORMATTED[@]}
+          for i in ${SUCCESSFUL_APPS_ARR[@]}
           do
             APP_ID=(${i//\"})
             echo $APP_ID
