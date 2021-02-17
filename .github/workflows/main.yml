@@ -21,20 +21,10 @@ jobs:
         name: Check Apps
         if: github.event_name != 'schedule'
         run: |
-          if ! command -v jq &> /dev/null
-          then
-            echo "jq could not be found, installing"
-            apt-get update
-            apt-get install -y jq
-          fi
           SUCCESSFUL_APPS=(next premium-hub)
           echo $SUCCESSFUL_APPS
-          SUCCESSFUL_APPS_LENGTH=$(echo $SUCCESSFUL_APPS | jq '. | length')
-          SUCCESSFUL_APPS_STRING=$(echo $SUCCESSFUL_APPS | jq '.|tostring')
-          echo $SUCCESSFUL_APPS_STRING
+
           echo "::set-output name=apps::$SUCCESSFUL_APPS"
-          echo "::set-output name=length::$SUCCESSFUL_APPS_LENGTH"
-          echo "::set-output name=appsString::$SUCCESSFUL_APPS_STRING"
 
           SUCCESSFUL_APPS_ARR=$(echo $SUCCESSFUL_APPS | sed -e 's/\[ //g' -e 's/\ ]//g' -e 's/\,//g')
           SUCCESSFUL_APPS_ARR_FORMATTED=( $SUCCESSFUL_APPS_ARR )
